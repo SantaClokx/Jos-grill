@@ -10,6 +10,9 @@ const audit = async (db, userId, action, entity, entityId, details = {}) => {
 };
 
 module.exports = async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.setHeader("CDN-Cache-Control", "no-store");
+  res.setHeader("Vercel-CDN-Cache-Control", "no-store");
   if (!["GET", "POST", "PATCH", "PUT", "DELETE"].includes(req.method)) {
     res.setHeader("Allow", "GET, POST, PATCH, PUT, DELETE");
     return res.status(405).json({ error: "Method not allowed" });
