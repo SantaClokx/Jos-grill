@@ -56,7 +56,7 @@ footer{padding:28px 0;color:var(--muted);font-size:11px}.footer-inner{display:fl
   <span class="eyebrow"><i class="dot"></i> Your neighbourhood grill · Elelenwo</span>
   <h1>Good food.<br><em>Good mood.</em></h1>
   <p class="hero-copy">Big cravings deserve proper flavour. Discover satisfying grills, crispy favourites and quick bites from JO'S Grill — made for your everyday happy moments.</p>
-  <div class="hero-buttons"><a class="btn btn-red" href="#menu">Explore the menu <span aria-hidden="true">↗</span></a><a class="btn btn-light" href="tel:+2347083450350">Call to order</a></div>
+  <div class="hero-buttons"><a class="btn btn-red" href="#menu">Explore the menu <span aria-hidden="true">↗</span></a><a class="btn btn-light" id="publicCallLink" href="tel:+2347083450350">Call to order</a></div>
   <div class="hero-note"><div class="avatars"><span>🍔</span><span>🍟</span><span>🍗</span></div><span><b>Made for your cravings.</b><br>Order directly from your phone.</span></div>
  </div>
  <div class="hero-visual">
@@ -96,7 +96,7 @@ footer{padding:28px 0;color:var(--muted);font-size:11px}.footer-inner{display:fl
 <section class="section" id="about"><div class="wrap"><div class="section-head"><div><div class="kicker">Why order with us</div><h2>Good food, less fuss.</h2></div><p>We keep the ordering experience straightforward, so you can spend less time figuring things out and more time enjoying your food.</p></div>
  <div class="info-grid"><article class="info-card"><div class="info-icon">🍽️</div><h3>Easy-to-browse menu</h3><p>Explore the available favourites, compare prices and choose what sounds good to you.</p></article><article class="info-card"><div class="info-icon">🧾</div><h3>Clear order summary</h3><p>Your cart calculates quantities and food totals automatically before you send your order.</p></article><article class="info-card"><div class="info-icon">💬</div><h3>Direct WhatsApp handoff</h3><p>Your details and selected items are organised into one message for the JO'S Grill team.</p></article></div>
 </div></section>
-<section class="contact-band" id="contact"><div class="wrap contact-inner"><div><div class="kicker">Come say hello</div><h2>JO'S Grill</h2><p>R3Q9+VJ5, Old Refinery Road, Umurolu, Elelenwo, Rivers State, Nigeria</p><p style="margin-top:7px;font-weight:800;color:#28231d">+234 708 345 0350</p></div><div class="contact-actions"><a class="btn btn-dark" href="tel:+2347083450350">Call us</a><a class="btn btn-red" href="https://wa.me/2347083450350" target="_blank" rel="noopener">Chat on WhatsApp ↗</a></div></div></section>
+<section class="contact-band" id="contact"><div class="wrap contact-inner"><div><div class="kicker">Come say hello</div><h2>JO'S Grill</h2><p id="publicAddress">R3Q9+VJ5, Old Refinery Road, Umurolu, Elelenwo, Rivers State, Nigeria</p><p id="publicPhone" style="margin-top:7px;font-weight:800;color:#28231d">+234 708 345 0350</p><p id="publicHours" style="margin-top:7px"></p></div><div class="contact-actions"><a class="btn btn-dark" href="tel:+2347083450350">Call us</a><a class="btn btn-red" id="publicWhatsAppLink" href="https://wa.me/2347083450350" target="_blank" rel="noopener">Chat on WhatsApp ↗</a></div></div></section>
 </main>
 <footer><div class="wrap footer-inner"><div><div class="footer-brand">JO'S <span>Grill.</span></div><div>© <span id="year"></span> JO'S Grill. All rights reserved.</div></div><div>Website crafted by SNT STUDIOS</div></div></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -109,7 +109,7 @@ const $=id=>document.getElementById(id);
 function renderMenu(){
  const query=$("menuSearch").value.trim().toLowerCase();
  const shown=products.filter(p=>(activeFilter==="all"||p.category===activeFilter)&&(!query||(p.name+" "+p.description).toLowerCase().includes(query)));
- $("menuGrid").innerHTML=shown.length?shown.map(p=>'<article class="food-card"><div class="food-image"><img src="'+p.image+'" alt="'+p.name+'" loading="lazy" onerror="this.style.display=\'none\'"><span class="food-tag">'+p.tag+'</span></div><div class="food-content"><div class="food-title"><h3>'+p.name+'</h3></div><p>'+p.description+'</p><div class="food-bottom"><span class="price">'+money(p.price)+'</span><button class="add-btn" type="button" data-add="'+p.id+'">Add +</button></div></div></article>').join(""):'<div class="empty-menu">No menu items match that search. Try another name or category.</div>';
+ $("menuGrid").innerHTML=shown.length?shown.map(p=>'<article class="food-card"><div class="food-image"><img src="'+escapeHtml(p.image)+'" alt="'+escapeHtml(p.name)+'" loading="lazy" onerror="this.style.display=\'none\'"><span class="food-tag">'+escapeHtml(p.tag||"")+'</span></div><div class="food-content"><div class="food-title"><h3>'+escapeHtml(p.name)+'</h3></div><p>'+escapeHtml(p.description)+'</p><div class="food-bottom"><span class="price">'+money(p.price)+'</span><button class="add-btn" type="button" data-add="'+p.id+'">Add +</button></div></div></article>').join(""):'<div class="empty-menu">No menu items match that search. Try another name or category.</div>';
 }
 function addItem(id){cart[id]=(cart[id]||0)+1;renderCart();showToast("Added to your order.");}
 function updateQty(id,delta){cart[id]=(cart[id]||0)+delta;if(cart[id]<=0)delete cart[id];renderCart();}
@@ -154,6 +154,16 @@ async function loadMenu(){
   const response=await fetch("/api/menu");if(!response.ok)throw new Error("Menu unavailable");
   const data=await response.json();products=data.items||[];
   if(data.profile?.whatsapp_number)WHATSAPP_NUMBER=String(data.profile.whatsapp_number).replace(/\D/g,"");
+  if(data.profile){
+   if(data.profile.address)$("publicAddress").textContent=data.profile.address;
+   if(data.profile.phone)$("publicPhone").textContent=data.profile.phone;
+   if(data.profile.phone)$("publicCallLink").href="tel:"+data.profile.phone.replace(/[^+0-9]/g,"");
+   if(WHATSAPP_NUMBER)$("publicWhatsAppLink").href="https://wa.me/"+WHATSAPP_NUMBER;
+  }
+  if(Array.isArray(data.hours)){
+   const openDays=data.hours.filter(day=>!day.is_closed&&day.open_time&&day.close_time);
+   $("publicHours").textContent=openDays.length?"Opening hours: "+openDays.map(day=>["Sun","Mon","Tue","Wed","Thu","Fri","Sat"][Number(day.day_of_week)]+" "+day.open_time+"–"+day.close_time).join(" · "):"Opening hours are being updated.";
+  }
   renderMenu();renderCart();
  }catch(error){
   products=[];renderMenu();renderCart();
