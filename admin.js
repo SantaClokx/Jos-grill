@@ -19,9 +19,29 @@ function message(target, text, isError = false) {
   node.className = isError ? "error" : "notice";
 }
 function hide(target) { $(target).classList.add("hidden"); }
+// createAuthClient() returns the raw Better Auth client, which has NO getJWTToken() method.
+// Calling auth.getJWTToken() is silently proxied to GET <auth-url>/get-jwt-token, a route that
+// does not exist, and Neon Auth answers "HTTP 404". Instead, Neon Auth puts the short-lived
+// (15 min) JWT in session.token, but only when the session is fetched from the network:
+// right after sign-in the SDK cache holds the opaque session token, so we force a network read.
+// "X-Force-Fetch" is an @neon/auth internal; the import above is pinned to 0.8.1 for that reason.
+let jwtCache = { token: "", expiresAt: 0 };
+function resetToken() { jwtCache = { token: "", expiresAt: 0 }; }
+function jwtExpiry(token) {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1].replace(/-/g, "+").replace(/_/g, "/")));
+    return Number(payload.exp) * 1000 || 0;
+  } catch { return 0; }
+}
 async function getToken() {
-  const token = await auth.getJWTToken();
-  if (!token) throw new Error("Your secure Neon session token is unavailable. Please sign in again.");
+  if (jwtCache.token && Date.now() < jwtCache.expiresAt - 60000) return jwtCache.token;
+  const result = await auth.getSession({ fetchOptions: { headers: { "X-Force-Fetch": "1" } } });
+  const token = result.data?.session?.token;
+  if (result.error || !token || token.split(".").length !== 3) {
+    resetToken();
+    throw new Error("Your secure Neon session token is unavailable. Please sign in again.");
+  }
+  jwtCache = { token, expiresAt: jwtExpiry(token) };
   return token;
 }
 async function api(resource, method = "GET", body = null) {
@@ -52,12 +72,14 @@ let pendingEmail = "";
 let pendingPassword = "";
 
 function showApp(user) {
+  resetToken();
   $("loginView").classList.add("hidden");
   $("appView").classList.remove("hidden");
   $("signedInAs").textContent = user?.email ? "Signed in as " + user.email : "Owner session active";
   loadView("dashboard");
 }
 function showLogin() {
+  resetToken();
   $("appView").classList.add("hidden");
   $("loginView").classList.remove("hidden");
   $("verifyView").classList.add("hidden");
