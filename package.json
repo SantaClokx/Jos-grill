@@ -1,0 +1,12 @@
+{
+  "name": "jos-grill",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "engines": { "node": "22.x" },
+  "scripts": { "test": "node --check api/admin.js && node --check api/menu.js && node --check api/orders.js && node --check lib/auth.js && node --check lib/db.js" },
+  "dependencies": {
+    "jose": "^6.1.0",
+    "pg": "^8.16.3"
+  }
+}
