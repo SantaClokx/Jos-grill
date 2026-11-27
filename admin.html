@@ -1,0 +1,136 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#171714">
+<title>JO'S Grill — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&family=Manrope:wght@600;700;800;900&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#f5f2eb;--card:#fffefa;--ink:#211e1a;--muted:#777168;--line:#e8e0d3;--red:#d9432f;--green:#16864a;--dark:#24211d;--shadow:0 14px 40px #38271912}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font-family:"DM Sans",sans-serif}button,input,textarea,select{font:inherit}button{cursor:pointer}a{color:inherit;text-decoration:none}.shell{width:min(1200px,calc(100% - 36px));margin:auto}.top{background:var(--dark);color:white;padding:17px 0}.top-inner{display:flex;align-items:center;justify-content:space-between;gap:16px}.brand{font:900 20px Manrope;letter-spacing:-1px}.brand span{color:#f16b55}.top small{color:#c6bfb4;font-size:11px}.login-wrap{min-height:calc(100vh - 65px);display:grid;place-items:center;padding:30px 0}.login{width:min(430px,100%);background:var(--card);padding:32px;border:1px solid var(--line);border-radius:22px;box-shadow:var(--shadow)}.login h1{font:900 28px Manrope;margin:0 0 8px}.muted{color:var(--muted);font-size:13px;line-height:1.6}.field{display:grid;gap:6px;margin:14px 0}.field label{font-size:11px;font-weight:800;color:#665f55}.field input,.field textarea,.field select{width:100%;padding:12px;border:1px solid var(--line);border-radius:10px;background:white;outline:none}.field textarea{min-height:82px}.field input:focus,.field textarea:focus,.field select:focus{border-color:var(--red);box-shadow:0 0 0 3px #d9432f15}.btn{border:0;border-radius:10px;padding:12px 16px;font-weight:800;font-size:12px;background:var(--dark);color:white}.btn.red{background:var(--red)}.btn.green{background:var(--green)}.btn.light{background:#f1ece3;color:var(--ink)}.btn.small{padding:8px 10px}.btn:disabled{opacity:.5;cursor:not-allowed}.wide{width:100%}.switch{font-size:12px;color:var(--muted);text-align:center;margin:18px 0 0}.switch button{border:0;background:none;color:var(--red);font-weight:800}.notice{padding:11px 13px;background:#fff3dc;border-radius:10px;color:#755b2d;font-size:12px;line-height:1.5;margin-top:15px}.error{color:#a52f22;background:#fff0ed;padding:10px;border-radius:9px;font-size:12px;margin:10px 0}.hidden{display:none!important}
+.app{padding:24px 0 60px}.app-head{display:flex;justify-content:space-between;align-items:center;gap:14px;margin-bottom:20px}.app-head h1{font:900 28px Manrope;margin:0}.app-head p{color:var(--muted);font-size:12px;margin:4px 0 0}.tabs{display:flex;gap:8px;overflow:auto;padding-bottom:12px;margin-bottom:14px}.tab{white-space:nowrap;border:1px solid var(--line);border-radius:999px;background:var(--card);padding:10px 15px;font-size:12px;font-weight:800;color:#5f584e}.tab.active{background:var(--dark);color:white;border-color:var(--dark)}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:22px;box-shadow:var(--shadow)}.panel h2{font:800 19px Manrope;margin:0 0 6px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:18px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:13px;margin-bottom:18px}.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:18px}.stat small{display:block;color:var(--muted);font-size:11px}.stat strong{display:block;font:900 25px Manrope;margin-top:7px}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.grid .full{grid-column:1/-1}.form-row{display:flex;gap:10px;align-items:end;flex-wrap:wrap}.form-row .field{flex:1;min-width:130px}.check{display:flex;align-items:center;gap:8px;font-size:12px;font-weight:700;margin:12px 0}.list{display:grid;gap:9px;margin-top:18px}.item{border:1px solid var(--line);border-radius:12px;padding:13px;display:flex;align-items:center;justify-content:space-between;gap:12px}.item-main{min-width:0}.item strong{font-size:13px}.item small{display:block;color:var(--muted);font-size:11px;margin-top:4px;overflow-wrap:anywhere}.actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;min-width:720px}th,td{text-align:left;padding:12px 10px;border-bottom:1px solid var(--line);font-size:12px;vertical-align:top}th{color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.07em}.status{display:inline-block;border-radius:99px;padding:5px 8px;background:#f1ece3;font-size:10px;font-weight:800}.status.received{background:#fff1d6;color:#8b5b10}.status.delivered{background:#e4f5e9;color:#176a39}.status.cancelled{background:#ffebe7;color:#a52f22}.hours-row{display:grid;grid-template-columns:100px 1fr 1fr auto;gap:9px;align-items:center;padding:10px 0;border-bottom:1px solid var(--line)}.hours-row input[type=time]{width:100%;padding:9px;border:1px solid var(--line);border-radius:8px}.hours-row label{font-size:12px;font-weight:800}.empty{padding:28px;text-align:center;color:var(--muted);font-size:13px;border:1px dashed var(--line);border-radius:12px}.hint{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px}
+@media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}.grid{grid-template-columns:1fr}.grid .full{grid-column:auto}.panel{padding:16px}.app-head h1{font-size:23px}.hours-row{grid-template-columns:75px 1fr 1fr}.hours-row .closed{grid-column:1/-1}.top-inner{align-items:flex-start;flex-direction:column}.login{padding:24px}}
+@media(max-width:420px){.shell{width:calc(100% - 24px)}.stats{gap:8px}.stat{padding:13px}.stat strong{font-size:21px}.item{align-items:flex-start;flex-direction:column}.actions{justify-content:flex-start}}
+</style>
+</head>
+<body>
+<header class="top"><div class="shell top-inner"><div><div class="brand">JO'S <span>Grill.</span> <small>ADMIN</small></div><small>Restaurant operations dashboard</small></div><a href="/" class="btn light">View public website ↗</a></div></header>
+<main class="shell">
+<section id="loginView" class="login-wrap">
+ <div class="login">
+  <div class="muted" style="font-weight:800;color:#d9432f;letter-spacing:1.5px">OWNER ACCESS</div>
+  <h1 id="authTitle">Sign in to JO'S Grill</h1>
+  <p class="muted">Manage your menu, opening hours, delivery, payment information and customer orders.</p>
+  <form id="authForm">
+   <div class="field" id="nameField" hidden><label for="authName">YOUR NAME</label><input id="authName" autocomplete="name" placeholder="Owner name"></div>
+   <div class="field"><label for="authEmail">EMAIL ADDRESS</label><input id="authEmail" type="email" autocomplete="email" required placeholder="owner@example.com"></div>
+   <div class="field"><label for="authPassword">PASSWORD</label><input id="authPassword" type="password" autocomplete="current-password" minlength="8" required placeholder="At least 8 characters"></div>
+   <button class="btn red wide" id="authSubmit" type="submit">Sign in</button>
+  </form>
+  <div id="authError" class="error hidden"></div>
+  <div id="authNotice" class="notice hidden"></div>
+  <p class="switch"><span id="switchText">New owner account?</span> <button id="switchAuth" type="button">Create account</button></p>
+ </div>
+</section>
+<section id="appView" class="app hidden">
+ <div class="app-head"><div><h1>Restaurant control centre</h1><p id="signedInAs">Signed in</p></div><button class="btn light" id="signOut">Sign out</button></div>
+ <nav class="tabs" id="tabs">
+  <button class="tab active" data-view="dashboard">Overview</button>
+  <button class="tab" data-view="menu">Menu</button>
+  <button class="tab" data-view="profile">Business profile</button>
+  <button class="tab" data-view="hours">Opening hours</button>
+  <button class="tab" data-view="delivery">Delivery</button>
+  <button class="tab" data-view="payments">Payments</button>
+  <button class="tab" data-view="orders">Orders</button>
+ </nav>
+ <div id="globalMessage" class="notice hidden"></div>
+ <section class="view" id="view-dashboard">
+  <div class="stats">
+   <div class="stat"><small>Total orders</small><strong id="statOrders">—</strong></div>
+   <div class="stat"><small>New orders</small><strong id="statNew">—</strong></div>
+   <div class="stat"><small>Preparing</small><strong id="statPreparing">—</strong></div>
+   <div class="stat"><small>Delivered revenue</small><strong id="statRevenue">—</strong></div>
+  </div>
+  <div class="panel"><div class="panel-head"><div><h2>Recent orders</h2><div class="muted">Latest customer orders recorded in Neon</div></div><button class="btn small" data-go="orders">View all</button></div><div id="recentOrders" class="list"></div></div>
+ </section>
+ <section class="view hidden" id="view-menu">
+  <div class="panel">
+   <div class="panel-head"><div><h2 id="menuFormTitle">Add menu item</h2><div class="muted">Only published and available items appear on the public menu.</div></div></div>
+   <form id="menuForm">
+    <input type="hidden" id="menuId">
+    <div class="grid">
+     <div class="field"><label for="menuName">ITEM NAME *</label><input id="menuName" required maxlength="140"></div>
+     <div class="field"><label for="menuPrice">PRICE (₦) *</label><input id="menuPrice" type="number" min="0" step="1" required></div>
+     <div class="field"><label for="menuCategory">CATEGORY</label><select id="menuCategory"><option value="mains">Mains</option><option value="quick">Quick bites</option><option value="drinks">Drinks</option></select></div>
+     <div class="field"><label for="menuTag">LABEL</label><input id="menuTag" placeholder="e.g. Customer favourite"></div>
+     <div class="field full"><label for="menuDescription">DESCRIPTION</label><textarea id="menuDescription"></textarea></div>
+     <div class="field full"><label for="menuImage">IMAGE URL</label><input id="menuImage" type="url" placeholder="https://..."></div>
+     <div class="field"><label for="menuSort">DISPLAY ORDER</label><input id="menuSort" type="number" value="0"></div>
+    </div>
+    <label class="check"><input id="menuAvailable" type="checkbox"> Available to order</label>
+    <label class="check"><input id="menuPublished" type="checkbox"> Publish on public website</label>
+    <div class="actions"><button class="btn red" type="submit">Save menu item</button><button class="btn light" id="menuReset" type="button">Clear</button></div>
+   </form>
+   <div id="menuList" class="list"></div>
+  </div>
+ </section>
+ <section class="view hidden" id="view-profile">
+  <div class="panel"><div class="panel-head"><div><h2>Business profile</h2><div class="muted">These details are used by the public website and checkout.</div></div></div>
+   <form id="profileForm"><div class="grid">
+    <div class="field"><label for="profileName">BUSINESS NAME</label><input id="profileName" required></div>
+    <div class="field"><label for="profilePhone">PHONE</label><input id="profilePhone"></div>
+    <div class="field"><label for="profileWhatsApp">WHATSAPP NUMBER (COUNTRY CODE)</label><input id="profileWhatsApp" placeholder="234..."></div>
+    <div class="field"><label for="profileLogo">LOGO URL</label><input id="profileLogo" type="url"></div>
+    <div class="field full"><label for="profileAddress">BUSINESS ADDRESS</label><textarea id="profileAddress"></textarea></div>
+    <div class="field full"><label for="profileDescription">PUBLIC DESCRIPTION</label><textarea id="profileDescription"></textarea></div>
+    <div class="field"><label for="profileMinimum">MINIMUM ORDER (₦)</label><input id="profileMinimum" type="number" min="0"></div>
+    <div class="field"><label for="profilePrep">PREPARATION TIME (MINUTES)</label><input id="profilePrep" type="number" min="1"></div>
+    <div class="field full"><label for="profileNotice">PUBLIC NOTICE</label><input id="profileNotice" placeholder="e.g. Closed for a short break today"></div>
+    <div class="field"><label for="profileInstagram">INSTAGRAM URL</label><input id="profileInstagram" type="url"></div>
+    <div class="field"><label for="profileFacebook">FACEBOOK URL</label><input id="profileFacebook" type="url"></div>
+   </div>
+   <label class="check"><input id="profileDelivery" type="checkbox"> Accept delivery orders</label>
+   <label class="check"><input id="profilePickup" type="checkbox"> Offer store pickup</label>
+   <button class="btn red" type="submit">Save business profile</button>
+   </form>
+  </div>
+ </section>
+ <section class="view hidden" id="view-hours">
+  <div class="panel"><div class="panel-head"><div><h2>Opening hours</h2><div class="muted">Set the hours shown to customers. Days start closed until you configure them.</div></div></div>
+   <form id="hoursForm"><div id="hoursRows"></div><button class="btn red" type="submit" style="margin-top:18px">Save opening hours</button></form>
+  </div>
+ </section>
+ <section class="view hidden" id="view-delivery">
+  <div class="panel"><div class="panel-head"><div><h2>Delivery zones and fees</h2><div class="muted">A matching active city/state gets the configured fee at checkout. Unmatched areas require manual confirmation.</div></div></div>
+   <form id="deliveryForm"><input type="hidden" id="zoneId"><div class="grid">
+    <div class="field"><label for="zoneName">ZONE LABEL</label><input id="zoneName" required></div>
+    <div class="field"><label for="zoneCity">CITY / AREA</label><input id="zoneCity" required></div>
+    <div class="field"><label for="zoneState">STATE</label><input id="zoneState" required></div>
+    <div class="field"><label for="zoneFee">DELIVERY FEE (₦)</label><input id="zoneFee" type="number" min="0" required></div>
+    <div class="field"><label for="zoneMinimum">MINIMUM ORDER (₦)</label><input id="zoneMinimum" type="number" min="0" value="0"></div>
+   </div><label class="check"><input id="zoneActive" type="checkbox" checked> Active zone</label><div class="actions"><button class="btn red" type="submit">Save delivery zone</button><button class="btn light" id="zoneReset" type="button">Clear</button></div></form>
+   <div id="deliveryList" class="list"></div>
+  </div>
+ </section>
+ <section class="view hidden" id="view-payments">
+  <div class="panel"><div class="panel-head"><div><h2>Payment methods</h2><div class="muted">Add transfer details or other payment instructions. No card payment is processed by this website.</div></div></div>
+   <form id="paymentForm"><input type="hidden" id="paymentId"><div class="grid">
+    <div class="field"><label for="paymentName">METHOD NAME</label><input id="paymentName" required placeholder="Bank transfer / Cash"></div>
+    <div class="field"><label for="paymentBank">BANK</label><input id="paymentBank"></div>
+    <div class="field"><label for="paymentAccountName">ACCOUNT NAME</label><input id="paymentAccountName"></div>
+    <div class="field"><label for="paymentAccountNumber">ACCOUNT NUMBER</label><input id="paymentAccountNumber" inputmode="numeric"></div>
+    <div class="field full"><label for="paymentInstructions">INSTRUCTIONS</label><textarea id="paymentInstructions"></textarea></div>
+   </div><label class="check"><input id="paymentActive" type="checkbox"> Show this method to customers</label><div class="actions"><button class="btn red" type="submit">Save payment method</button><button class="btn light" id="paymentReset" type="button">Clear</button></div></form>
+   <div id="paymentList" class="list"></div>
+  </div>
+ </section>
+ <section class="view hidden" id="view-orders">
+  <div class="panel"><div class="panel-head"><div><h2>Customer orders</h2><div class="muted">Update order progress, delivery fees and payment status.</div></div><button class="btn small" id="refreshOrders">Refresh</button></div><div class="table-wrap"><table><thead><tr><th>Order</th><th>Customer</th><th>Items</th><th>Food total</th><th>Status</th><th>Payment</th><th>Delivery fee</th><th>Save</th></tr></thead><tbody id="ordersBody"></tbody></table></div></div>
+ </section>
+</section>
+</main>
+<script type="module" src="/admin.js"></script>
+</body>
+</html>
