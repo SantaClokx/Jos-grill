@@ -8,7 +8,7 @@ module.exports = async function handler(req, res) {
   try {
     const db = getPool();
     const [menu, profile, hours, zones, payments] = await Promise.all([
-      db.query("SELECT id, name, description, category, tag, price, image_url FROM public.menu_items WHERE is_published = true AND is_available = true ORDER BY sort_order, name"),
+      db.query("SELECT id, name, description, category, tag, price, image_url AS image FROM public.menu_items WHERE is_published = true AND is_available = true ORDER BY sort_order, name"),
       db.query("SELECT business_name, phone, whatsapp_number, address, description, logo_url, pickup_enabled, delivery_enabled, minimum_order_amount, estimated_prep_minutes, public_notice, instagram_url, facebook_url FROM public.store_profile WHERE id = 1"),
       db.query("SELECT day_of_week, to_char(open_time, 'HH24:MI') AS open_time, to_char(close_time, 'HH24:MI') AS close_time, is_closed, notes FROM public.business_hours ORDER BY day_of_week"),
       db.query("SELECT id, zone_name, city, state, fee, minimum_order_amount FROM public.delivery_zones WHERE is_active = true ORDER BY state, city, zone_name"),
