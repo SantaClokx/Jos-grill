@@ -67,7 +67,7 @@ footer{padding:28px 0;color:var(--muted);font-size:11px}.footer-inner{display:fl
 </div></section>
 <div class="strip"><div class="wrap strip-inner"><div class="strip-item"><span>🔥</span> Big, satisfying flavours</div><div class="strip-item"><span>🥡</span> Easy WhatsApp ordering</div><div class="strip-item"><span>📍</span> Proudly serving Elelenwo</div><div class="strip-item"><span>♡</span> Made for food lovers</div></div></div>
 <section class="section" id="menu"><div class="wrap">
- <div class="section-head"><div><div class="kicker">The good stuff</div><h2>What are you craving?</h2></div><p>Find your favourite, add it to your order and let us take it from there. Menu items and prices shown are sample details pending confirmation.</p></div>
+ <div class="section-head"><div><div class="kicker">The good stuff</div><h2>What are you craving?</h2></div><p>Find your favourite, add it to your order and let us take it from there. The menu and prices are managed by JO'S Grill and updated here automatically.</p></div>
  <div class="menu-tools"><div class="filters" id="filters" aria-label="Filter menu"><button class="filter active" data-filter="all">All items</button><button class="filter" data-filter="mains">Mains</button><button class="filter" data-filter="quick">Quick bites</button><button class="filter" data-filter="drinks">Drinks</button></div><label class="search"><input id="menuSearch" type="search" placeholder="Search the menu…" aria-label="Search menu"></label></div>
  <div class="menu-grid" id="menuGrid" aria-live="polite"></div>
 </div></section>
@@ -84,6 +84,8 @@ footer{padding:28px 0;color:var(--muted);font-size:11px}.footer-inner{display:fl
     <div class="field"><label for="customerName">YOUR NAME *</label><input id="customerName" name="name" autocomplete="name" placeholder="e.g. Ada" required></div>
     <div class="field"><label for="customerPhone">PHONE NUMBER *</label><input id="customerPhone" name="phone" type="tel" autocomplete="tel" placeholder="e.g. 080…" required></div>
     <div class="field full"><label for="customerAddress">DELIVERY ADDRESS *</label><input id="customerAddress" name="address" autocomplete="street-address" placeholder="Street, area, landmark" required></div>
+    <div class="field"><label for="customerCity">CITY / AREA *</label><input id="customerCity" name="city" placeholder="e.g. Elelenwo" required></div>
+    <div class="field"><label for="customerState">STATE *</label><input id="customerState" name="state" placeholder="e.g. Rivers State" required></div>
     <div class="field full"><label for="orderNotes">ORDER NOTES (OPTIONAL)</label><textarea id="orderNotes" name="notes" placeholder="Any special instructions?"></textarea></div>
    </div>
    <button class="checkout-btn" id="checkoutButton" type="submit" disabled>Send order to WhatsApp ↗</button>
@@ -99,15 +101,8 @@ footer{padding:28px 0;color:var(--muted);font-size:11px}.footer-inner{display:fl
 <footer><div class="wrap footer-inner"><div><div class="footer-brand">JO'S <span>Grill.</span></div><div>© <span id="year"></span> JO'S Grill. All rights reserved.</div></div><div>Website crafted by SNT STUDIOS</div></div></footer>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 <script>
-const WHATSAPP_NUMBER="2347083450350";
-const products=[
-{id:1,name:"JO'S Classic Burger",category:"mains",tag:"Customer favourite",description:"Juicy burger with fresh toppings and house-style sauce.",price:4500,image:"https://images.unsplash.com/photo-1568901346375-23c9450c58cd?auto=format&fit=crop&w=800&q=82"},
-{id:2,name:"Fish & Chips",category:"mains",tag:"Crispy favourite",description:"Crispy fish with golden chips and your choice of side.",price:5500,image:"https://images.unsplash.com/photo-1579208030886-b937da0925dc?auto=format&fit=crop&w=800&q=82"},
-{id:3,name:"Grilled Fish",category:"mains",tag:"From the grill",description:"Seasoned grilled fish served with a satisfying side.",price:6500,image:"https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?auto=format&fit=crop&w=800&q=82"},
-{id:4,name:"Loaded Sausage Roll",category:"quick",tag:"Quick bite",description:"A quick, filling bite for a lighter craving.",price:2500,image:"https://images.unsplash.com/photo-1608039829572-78524f79c4c7?auto=format&fit=crop&w=800&q=82"},
-{id:5,name:"Chicken & Chips",category:"mains",tag:"Hearty meal",description:"Crispy chicken paired with golden chips.",price:5000,image:"https://images.unsplash.com/photo-1626082927389-6cd097cdc6ec?auto=format&fit=crop&w=800&q=82"},
-{id:6,name:"Chilled Soft Drink",category:"drinks",tag:"Something cold",description:"A chilled soft drink to complete your meal.",price:1000,image:"https://images.unsplash.com/photo-1581006852262-e4307cf6283a?auto=format&fit=crop&w=800&q=82"}
-];
+let WHATSAPP_NUMBER="2347083450350";
+let products=[];
 const cart={};let activeFilter="all";
 const money=n=>"₦"+new Intl.NumberFormat("en-NG",{maximumFractionDigits:0}).format(n);
 const $=id=>document.getElementById(id);
@@ -121,28 +116,51 @@ function updateQty(id,delta){cart[id]=(cart[id]||0)+delta;if(cart[id]<=0)delete 
 function removeItem(id){delete cart[id];renderCart();showToast("Item removed.");}
 function renderCart(){
  const ids=Object.keys(cart);let count=0,total=0;
- ids.forEach(id=>{count+=cart[id];total+=products.find(p=>p.id===Number(id)).price*cart[id]});
+ ids.forEach(id=>{count+=cart[id];total+=products.find(p=>String(p.id)===String(id)).price*cart[id]});
  $("navCount").textContent=count;$("itemCount").textContent=count;$("subtotal").textContent=money(total);$("total").textContent=money(total);$("checkoutButton").disabled=!count;
  if(!ids.length){$("cartList").innerHTML='<div class="cart-empty"><span>🛍️</span>Your cart is waiting.<br>Add something delicious from the menu.</div>';return;}
- $("cartList").innerHTML=ids.map(id=>{const p=products.find(x=>x.id===Number(id)),q=cart[id];return '<div class="cart-row"><div><strong>'+p.name+'</strong><small>'+money(p.price)+' each</small></div><div class="cart-right"><div class="qty"><button type="button" data-qty="-1" data-id="'+id+'" aria-label="Decrease '+p.name+' quantity">−</button><b>'+q+'</b><button type="button" data-qty="1" data-id="'+id+'" aria-label="Increase '+p.name+' quantity">+</button></div><span class="cart-line-price">'+money(p.price*q)+'</span><button class="remove" type="button" data-remove="'+id+'" aria-label="Remove '+p.name+'">×</button></div></div>'}).join("");
+ $("cartList").innerHTML=ids.map(id=>{const p=products.find(x=>String(x.id)===String(id)),q=cart[id];return '<div class="cart-row"><div><strong>'+p.name+'</strong><small>'+money(p.price)+' each</small></div><div class="cart-right"><div class="qty"><button type="button" data-qty="-1" data-id="'+id+'" aria-label="Decrease '+p.name+' quantity">−</button><b>'+q+'</b><button type="button" data-qty="1" data-id="'+id+'" aria-label="Increase '+p.name+' quantity">+</button></div><span class="cart-line-price">'+money(p.price*q)+'</span><button class="remove" type="button" data-remove="'+id+'" aria-label="Remove '+p.name+'">×</button></div></div>'}).join("");
 }
 function showToast(message){const t=$("toast");t.textContent=message;t.classList.add("show");clearTimeout(showToast.timer);showToast.timer=setTimeout(()=>t.classList.remove("show"),1700);}
 $("filters").addEventListener("click",e=>{const b=e.target.closest("[data-filter]");if(!b)return;activeFilter=b.dataset.filter;document.querySelectorAll(".filter").forEach(x=>x.classList.toggle("active",x===b));renderMenu();});
 $("menuSearch").addEventListener("input",renderMenu);
-$("menuGrid").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(b)addItem(Number(b.dataset.add));});
-$("cartList").addEventListener("click",e=>{const q=e.target.closest("[data-qty]"),r=e.target.closest("[data-remove]");if(q)updateQty(Number(q.dataset.id),Number(q.dataset.qty));if(r)removeItem(Number(r.dataset.remove));});
+$("menuGrid").addEventListener("click",e=>{const b=e.target.closest("[data-add]");if(b)addItem(b.dataset.add);});
+$("cartList").addEventListener("click",e=>{const q=e.target.closest("[data-qty]"),r=e.target.closest("[data-remove]");if(q)updateQty(q.dataset.id,Number(q.dataset.qty));if(r)removeItem(r.dataset.remove);});
 $("jumpCart").addEventListener("click",()=>$("order").scrollIntoView({behavior:"smooth"}));
 $("mobileMenu").addEventListener("click",()=>{const n=$("mobileNav"),open=n.style.display==="flex";n.style.display=open?"none":"flex";$("mobileMenu").setAttribute("aria-expanded",String(!open));});
 $("mobileNav").addEventListener("click",e=>{if(e.target.closest("a")){$("mobileNav").style.display="none";$("mobileMenu").setAttribute("aria-expanded","false");}});
-$("checkoutForm").addEventListener("submit",e=>{
+$("checkoutForm").addEventListener("submit",async e=>{
  e.preventDefault();const ids=Object.keys(cart);if(!ids.length){showToast("Add an item before checking out.");return;}
- const name=$("customerName").value.trim(),phone=$("customerPhone").value.trim(),address=$("customerAddress").value.trim(),notes=$("orderNotes").value.trim();
- if(!name||!phone||!address){showToast("Please complete the required details.");(!name?$("customerName"):!phone?$("customerPhone"):$("customerAddress")).focus();return;}
+ const name=$("customerName").value.trim(),phone=$("customerPhone").value.trim(),address=$("customerAddress").value.trim(),city=$("customerCity").value.trim(),state=$("customerState").value.trim(),notes=$("orderNotes").value.trim();
+ if(!name||!phone||!address||!city||!state){showToast("Please complete the required details.");(!name?$("customerName"):!phone?$("customerPhone"):!address?$("customerAddress"):!city?$("customerCity"):$("customerState")).focus();return;}
  if(!/^[+0-9()\s-]{7,20}$/.test(phone)){showToast("Please enter a valid phone number.");$("customerPhone").focus();return;}
- let total=0;const lines=ids.map(id=>{const p=products.find(x=>x.id===Number(id)),q=cart[id],line=p.price*q;total+=line;return "• "+p.name+" × "+q+" — "+money(line);});
- const message="Hello JO'S Grill! I'd like to place an order.\n\nCUSTOMER DETAILS\nName: "+name+"\nPhone: "+phone+"\nDelivery address: "+address+"\n\nORDER\n"+lines.join("\n")+"\n\nFood total: "+money(total)+"\nDelivery fee: Please confirm\n"+(notes?"\nSpecial instructions: "+notes+"\n":"\n")+"\nPlease confirm availability and the delivery fee. Thank you!";
- window.open("https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(message),"_blank","noopener");
+ const popup=window.open("about:blank","_blank");
+ $("checkoutButton").disabled=true;$("checkoutButton").textContent="Saving your order…";
+ try{
+  const response=await fetch("/api/orders",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({customerName:name,customerPhone:phone,deliveryAddress:address,deliveryCity:city,deliveryState:state,deliveryNotes:notes,deliveryMethod:"delivery",items:ids.map(id=>({id,quantity:cart[id]}))})});
+  const data=await response.json().catch(()=>({}));
+  if(!response.ok)throw new Error(data.error||"Could not save your order.");
+  const order=data.order,lines=data.items.map(item=>"• "+item.name+" × "+item.quantity+" — "+money(item.price*item.quantity));
+  const feeText=order.deliveryFeeConfirmed?money(order.deliveryFee):"Please confirm";
+  const message="Hello JO'S Grill! I'd like to confirm my order.\n\nORDER REFERENCE: "+order.reference+"\n\nCUSTOMER DETAILS\nName: "+name+"\nPhone: "+phone+"\nDelivery address: "+address+", "+city+", "+state+"\n\nORDER\n"+lines.join("\n")+"\n\nFood subtotal: "+money(order.subtotal)+"\nDelivery fee: "+feeText+"\nOrder total: "+money(order.total)+(notes?"\n\nSpecial instructions: "+notes:"")+"\n\nPlease confirm my order. Thank you!";
+  const url="https://wa.me/"+WHATSAPP_NUMBER+"?text="+encodeURIComponent(message);
+  if(popup)popup.location.href=url;else window.location.href=url;
+  Object.keys(cart).forEach(id=>delete cart[id]);renderCart();showToast("Order saved. Continue in WhatsApp.");
+ }catch(error){if(popup)popup.close();showToast(error.message||"Could not save your order.");}
+ finally{$("checkoutButton").textContent="Send order to WhatsApp ↗";$("checkoutButton").disabled=!Object.keys(cart).length;}
 });
-$("year").textContent=new Date().getFullYear();renderMenu();renderCart();
+async function loadMenu(){
+ try{
+  const response=await fetch("/api/menu");if(!response.ok)throw new Error("Menu unavailable");
+  const data=await response.json();products=data.items||[];
+  if(data.profile?.whatsapp_number)WHATSAPP_NUMBER=String(data.profile.whatsapp_number).replace(/\D/g,"");
+  renderMenu();renderCart();
+ }catch(error){
+  products=[];renderMenu();renderCart();
+  $("menuGrid").innerHTML='<div class="empty-menu">The menu is temporarily unavailable. Please contact JO\'S Grill on WhatsApp.</div>';
+ }
+}
+function escapeHtml(value){return String(value??"").replace(/[&<>"']/g,char=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[char]));}
+$("year").textContent=new Date().getFullYear();loadMenu();
 </script>
 </body></html>
