@@ -26,17 +26,25 @@ async function getToken() {
 }
 async function api(resource, method = "GET", body = null) {
   const token = await getToken();
-  const response = await fetch("/api/admin?resource=" + encodeURIComponent(resource), {
+  const endpoint = "/api/admin?resource=" + encodeURIComponent(resource);
+  const response = await fetch(endpoint, {
     method,
-    headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json" },
+    cache: "no-store",
+    headers: { "Authorization": "Bearer " + token, "Content-Type": "application/json", "Accept": "application/json" },
     body: body ? JSON.stringify(body) : undefined
   });
-  const data = await response.json().catch(() => ({}));
+  const raw = await response.text();
+  let data = {};
+  try { data = raw ? JSON.parse(raw) : {}; } catch { data = {}; }
   if (!response.ok) {
     if (data.code === "ADMIN_SETUP_REQUIRED") {
       throw new Error(data.error + " Once the owner email is confirmed, admin access can be activated.");
     }
-    throw new Error(data.error || "The request could not be completed.");
+    const detail = data.error || raw.slice(0, 240) || response.statusText || "No response body";
+    throw new Error("Admin API " + response.status + " (" + resource + "): " + detail);
+  }
+  if (!raw || !Object.keys(data).length) {
+    throw new Error("Admin API returned an empty or non-JSON response for " + resource + ".");
   }
   return data;
 }
