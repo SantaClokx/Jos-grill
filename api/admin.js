@@ -190,7 +190,7 @@ module.exports = async function handler(req, res) {
 
     return res.status(404).json({ error: "Unsupported action for this resource." });
   } catch (error) {
-    console.error("Admin API error:", error);
+    if (!error.status || error.status >= 500) console.error("Admin API error:", error);
     return sendError(res, error);
   }
 };
