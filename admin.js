@@ -40,6 +40,9 @@ async function api(resource, method = "GET", body = null) {
   }
   return data;
 }
+let pendingEmail = "";
+let pendingPassword = "";
+
 function showApp(user) {
   $("loginView").classList.add("hidden");
   $("appView").classList.remove("hidden");
@@ -49,6 +52,9 @@ function showApp(user) {
 function showLogin() {
   $("appView").classList.add("hidden");
   $("loginView").classList.remove("hidden");
+  $("verifyView").classList.add("hidden");
+  $("authForm").classList.remove("hidden");
+  $("authSwitchRow").classList.remove("hidden");
 }
 async function refreshSession() {
   try {
@@ -67,6 +73,18 @@ function setAuthMode(signUp) {
   $("switchAuth").textContent = signUp ? "Sign in" : "Create account";
   hide("authError"); hide("authNotice");
 }
+function showVerification(email, password) {
+  pendingEmail = email;
+  pendingPassword = password;
+  $("verifyEmailLabel").textContent = email;
+  $("verifyOtp").value = "";
+  $("authTitle").textContent = "Verify your email";
+  $("authForm").classList.add("hidden");
+  $("authSwitchRow").classList.add("hidden");
+  $("verifyView").classList.remove("hidden");
+  hide("authError");
+  message("authNotice", "Check your inbox for the six-digit Neon Auth verification code.");
+}
 $("switchAuth").addEventListener("click", () => setAuthMode(!isSignUp));
 $("authForm").addEventListener("submit", async (event) => {
   event.preventDefault();
@@ -75,26 +93,73 @@ $("authForm").addEventListener("submit", async (event) => {
   try {
     const email = $("authEmail").value.trim();
     const password = $("authPassword").value;
-    const result = isSignUp
-      ? await auth.signUp.email({ name: $("authName").value.trim() || "JO'S Grill Owner", email, password })
-      : await auth.signIn.email({ email, password });
-    if (result.error) throw new Error(result.error.message || "Authentication failed.");
-    const session = await auth.getSession();
-    if (!session.data?.user) throw new Error("Your account was created, but the session could not be loaded. Please sign in.");
-    showApp(session.data.user);
-    try {
-      await loadView("dashboard");
-    } catch (error) {
-      message("globalMessage", error.message, true);
-      if (error.message.includes("Owner access") || error.message.includes("owner email")) {
-        message("globalMessage", "Your Neon account is ready. Admin access still needs the restaurant owner's email to be authorised. Keep this account; finish the one-time activation before using the dashboard.");
-      }
+    if (isSignUp) {
+      const result = await auth.signUp.email({ name: $("authName").value.trim() || "JO'S Grill Owner", email, password });
+      if (result.error) throw new Error(result.error.message || "Account creation failed.");
+      showVerification(email, password);
+      return;
     }
+    const result = await auth.signIn.email({ email, password });
+    if (result.error) {
+      if (/email.*(not|isn.t)\s*verified/i.test(result.error.message || "")) {
+        const sent = await auth.emailOtp.sendVerificationOtp({ email, type: "email-verification" });
+        if (sent.error) throw new Error(sent.error.message || "Could not send a verification code.");
+        showVerification(email, password);
+        return;
+      }
+      throw new Error(result.error.message || "Sign in failed.");
+    }
+    const session = await auth.getSession();
+    if (!session.data?.user) throw new Error("Sign-in succeeded, but the owner session could not be loaded. Please try again.");
+    showApp(session.data.user);
   } catch (error) {
     message("authError", error.message, true);
   } finally {
     $("authSubmit").disabled = false;
   }
+});
+$("verifySubmit").addEventListener("click", async () => {
+  const otp = $("verifyOtp").value.trim();
+  if (!/^\d{6}$/.test(otp)) return message("authError", "Enter the six-digit code from your email.", true);
+  $("verifySubmit").disabled = true;
+  hide("authError");
+  try {
+    const result = await auth.emailOtp.verifyEmail({ email: pendingEmail, otp });
+    if (result.error) throw new Error(result.error.message || "Email verification failed.");
+    let session = await auth.getSession();
+    if (!session.data?.user && pendingPassword) {
+      const signedIn = await auth.signIn.email({ email: pendingEmail, password: pendingPassword });
+      if (signedIn.error) throw new Error(signedIn.error.message || "Email verified. Please sign in to continue.");
+      session = await auth.getSession();
+    }
+    if (!session.data?.user) throw new Error("Email verified. Please return to sign in.");
+    pendingPassword = "";
+    showApp(session.data.user);
+  } catch (error) {
+    message("authError", error.message, true);
+  } finally {
+    $("verifySubmit").disabled = false;
+  }
+});
+$("resendOtp").addEventListener("click", async () => {
+  $("resendOtp").disabled = true;
+  try {
+    const result = await auth.emailOtp.sendVerificationOtp({ email: pendingEmail, type: "email-verification" });
+    if (result.error) throw new Error(result.error.message || "Could not resend the code.");
+    message("authNotice", "A new verification code has been sent.");
+  } catch (error) {
+    message("authError", error.message, true);
+  } finally {
+    $("resendOtp").disabled = false;
+  }
+});
+$("backToLogin").addEventListener("click", () => {
+  $("authEmail").value = pendingEmail;
+  $("authPassword").value = pendingPassword;
+  $("verifyView").classList.add("hidden");
+  $("authForm").classList.remove("hidden");
+  $("authSwitchRow").classList.remove("hidden");
+  setAuthMode(false);
 });
 $("signOut").addEventListener("click", async () => { await auth.signOut(); showLogin(); });
 $("tabs").addEventListener("click", (event) => {
