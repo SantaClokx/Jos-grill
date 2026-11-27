@@ -78,10 +78,13 @@ module.exports = async function handler(req, res) {
       finalState = "Rivers State";
     } else {
       const zone = await client.query(
-        "SELECT fee FROM public.delivery_zones WHERE is_active = true AND lower(city) = lower($1) AND lower(state) = lower($2) ORDER BY updated_at DESC LIMIT 1",
+        "SELECT fee, minimum_order_amount FROM public.delivery_zones WHERE is_active = true AND lower(city) = lower($1) AND lower(state) = lower($2) ORDER BY updated_at DESC LIMIT 1",
         [city, state]
       );
       if (zone.rows.length) {
+        if (subtotal < Number(zone.rows[0].minimum_order_amount || 0)) {
+          return res.status(400).json({ error: "This order is below the minimum for the selected delivery area." });
+        }
         deliveryFee = Number(zone.rows[0].fee);
         deliveryFeeConfirmed = true;
       }
