@@ -14,7 +14,11 @@ module.exports = async function handler(req, res) {
       db.query("SELECT id, zone_name, city, state, fee, minimum_order_amount FROM public.delivery_zones WHERE is_active = true ORDER BY state, city, zone_name"),
       db.query("SELECT id, method_name, instructions, bank_name, account_name, account_number FROM public.payment_methods WHERE is_active = true ORDER BY sort_order, method_name")
     ]);
-    res.setHeader("Cache-Control", "public, s-maxage=60, stale-while-revalidate=300");
+    // Admin changes must be visible on the public website immediately.
+    // Never let a CDN or browser serve stale restaurant settings or menu data.
+    res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+    res.setHeader("CDN-Cache-Control", "no-store");
+    res.setHeader("Vercel-CDN-Cache-Control", "no-store");
     return res.status(200).json({
       items: menu.rows,
       profile: profile.rows[0] || null,
