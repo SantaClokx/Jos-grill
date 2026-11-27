@@ -4,7 +4,7 @@ const { requireAdmin } = require("../lib/auth");
 const sendError = (res, error) => res.status(error.status || 500).json({ error: error.message || "Unexpected server error", code: error.code });
 const audit = async (db, userId, action, entity, entityId, details = {}) => {
   await db.query(
-    "INSERT INTO public.audit_log (actor_user_id, action, entity, entity_id, details) VALUES ($1,$2,$3,$4,$5::jsonb)",
+    "INSERT INTO public.audit_log (id, actor_user_id, action, entity, entity_id, details) VALUES (nextval('public.audit_log_id_seq'),$1,$2,$3,$4,$5::jsonb)",
     [userId, action, entity, entityId || null, JSON.stringify(details)]
   );
 };
