@@ -80,6 +80,7 @@ footer{padding:28px 0;color:var(--muted);font-size:11px}.footer-inner{display:fl
   <div id="cartList" aria-live="polite"><div class="cart-empty"><span>🛍️</span>Your cart is waiting.<br>Add something delicious from the menu.</div></div>
   <div id="publicStoreNotice" class="delivery-note" hidden></div><div id="publicServiceInfo" class="delivery-note" hidden></div>
    <div id="publicStoreNotice" class="delivery-note" hidden></div><div id="publicServiceInfo" class="delivery-note" hidden></div>
+   <div id="publicStoreNotice" class="delivery-note" hidden></div><div id="publicServiceInfo" class="delivery-note" hidden></div>
    <div class="summary"><div class="summary-line"><span>Food subtotal</span><strong id="subtotal">₦0</strong></div><div class="summary-line"><span>Delivery fee</span><strong>To be confirmed</strong></div><div class="summary-line total"><span>Food total</span><strong id="total">₦0</strong></div><div class="delivery-note">Delivery charges are confirmed by the JO'S Grill team on WhatsApp before your order is finalised.</div></div>
   <form id="checkoutForm" novalidate>
    <div class="form-grid">
@@ -157,6 +158,20 @@ async function loadMenu(){
   const data=await response.json();products=data.items||[];
   if(data.profile?.whatsapp_number)WHATSAPP_NUMBER=String(data.profile.whatsapp_number).replace(/\D/g,"");
   if(data.profile){
+   const notice=$("publicStoreNotice");
+   if(data.profile.public_notice){notice.textContent=data.profile.public_notice;notice.hidden=false;}else{notice.hidden=true;}
+   const serviceInfo=$("publicServiceInfo");
+   const zones=Array.isArray(data.deliveryZones)?data.deliveryZones:[];
+   const methods=Array.isArray(data.paymentMethods)?data.paymentMethods:[];
+   const serviceLines=[];
+   if(data.profile.delivery_enabled){
+    serviceLines.push(zones.length?"Delivery areas: "+zones.map(z=>z.zone_name+" ("+money(z.fee)+(Number(z.minimum_order_amount)>0?", min. "+money(z.minimum_order_amount):"")+")").join(" · "):"Delivery is available; fees are confirmed by the restaurant.");
+   }else{serviceLines.push("Delivery is currently unavailable.");}
+   if(data.profile.pickup_enabled)serviceLines.push("Store pickup is available.");
+   if(methods.length)serviceLines.push("Accepted payment methods: "+methods.map(m=>m.method_name+(m.bank_name?" — "+m.bank_name:"")+(m.account_name?" · "+m.account_name:"")+(m.account_number?" · "+m.account_number:"")+(m.instructions?" · "+m.instructions:"")).join(" | "));
+   if(Number(data.profile.minimum_order_amount)>0)serviceLines.push("Minimum order: "+money(data.profile.minimum_order_amount));
+   serviceInfo.textContent=serviceLines.join("  •  ");serviceInfo.hidden=!serviceLines.length;
+
    if(data.profile.address)$("publicAddress").textContent=data.profile.address;
    if(data.profile.phone)$("publicPhone").textContent=data.profile.phone;
    if(data.profile.phone)$("publicCallLink").href="tel:"+data.profile.phone.replace(/[^+0-9]/g,"");
