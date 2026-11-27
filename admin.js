@@ -20,9 +20,9 @@ function message(target, text, isError = false) {
 }
 function hide(target) { $(target).classList.add("hidden"); }
 async function getToken() {
-  const result = await auth.getSession();
-  if (result.error || !result.data?.session?.token) throw new Error(result.error?.message || "Please sign in again.");
-  return result.data.session.token;
+  const token = await auth.getJWTToken();
+  if (!token) throw new Error("Your secure Neon session token is unavailable. Please sign in again.");
+  return token;
 }
 async function api(resource, method = "GET", body = null) {
   const token = await getToken();
