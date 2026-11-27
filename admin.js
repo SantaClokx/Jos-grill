@@ -1,7 +1,7 @@
 import { createAuthClient } from "https://esm.sh/@neon/auth@0.8.1?bundle";
 
 const AUTH_URL = "https://ep-twilight-recipe-b7f21dd7.neonauth.c-13.us-east-1.aws.neon.tech/neondb/auth";
-const auth = createAuthClient(AUTH_URL);
+const auth = createAuthClient(AUTH_URL, { fetchOptions: { credentials: "include" } });
 const $ = (id) => document.getElementById(id);
 const money = (value) => "₦" + new Intl.NumberFormat("en-NG").format(Number(value || 0));
 const days = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
@@ -20,9 +20,9 @@ function message(target, text, isError = false) {
 }
 function hide(target) { $(target).classList.add("hidden"); }
 async function getToken() {
-  const result = await auth.token();
-  if (result.error || !result.data?.token) throw new Error(result.error?.message || "Please sign in again.");
-  return result.data.token;
+  const result = await auth.getSession();
+  if (result.error || !result.data?.session?.token) throw new Error(result.error?.message || "Please sign in again.");
+  return result.data.session.token;
 }
 async function api(resource, method = "GET", body = null) {
   const token = await getToken();
