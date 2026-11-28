@@ -16,7 +16,9 @@ module.exports = async function handler(req, res) {
   const deliveryMethod = body.deliveryMethod === "pickup" ? "pickup" : "delivery";
   const requested = Array.isArray(body.items) ? body.items : [];
 
-  if (!name || name.length > 120 || !/^[+0-9()\\s-]{7,20}$/.test(phone) || requested.length < 1 || requested.length > 30) {
+  if (!name || name.length > 120 || !/^[+0-9()\s-]{7,20}$/.test(phone) || requested.length < 1 || requested.length > 30 ||
+      address.length > 300 || city.length > 100 || state.length > 100 || notes.length > 1000 ||
+      (body.deliveryMethod !== undefined && !["delivery", "pickup"].includes(body.deliveryMethod))) {
     return res.status(400).json({ error: "Please provide valid customer details and at least one menu item." });
   }
   if (deliveryMethod === "delivery" && (!address || !city || !state)) {
