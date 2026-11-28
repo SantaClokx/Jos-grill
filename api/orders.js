@@ -1,18 +1,46 @@
 const crypto = require("crypto");
 const { getPool } = require("../lib/db");
+const { allowOrderRequest } = require("../lib/rate-limit");
 
 module.exports = async function handler(req, res) {
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, max-age=0");
+  res.setHeader("CDN-Cache-Control", "no-store");
+  res.setHeader("Vercel-CDN-Cache-Control", "no-store");
   if (req.method !== "POST") {
     res.setHeader("Allow", "POST");
     return res.status(405).json({ error: "Method not allowed" });
   }
-  const body = req.body || {};
+
+  const contentType = String(req.headers["content-type"] || "").toLowerCase();
+  if (!contentType.startsWith("application/json")) {
+    return res.status(415).json({ error: "Content-Type must be application/json." });
+  }
+  const body = req.body;
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return res.status(400).json({ error: "A valid JSON order is required." });
+  }
+  if (Number(req.headers["content-length"] || 0) > 16 * 1024 ||
+      Buffer.byteLength(JSON.stringify(body), "utf8") > 16 * 1024) {
+    return res.status(413).json({ error: "Order request is too large." });
+  }
+
+  try {
+    const allowed = await allowOrderRequest(req);
+    if (!allowed) {
+      res.setHeader("Retry-After", "600");
+      return res.status(429).json({ error: "Too many order attempts. Please wait a few minutes and try again." });
+    }
+  } catch (error) {
+    console.error("Order rate-limit check failed:", error);
+    return res.status(503).json({ error: "Ordering is temporarily unavailable. Please try again shortly." });
+  }
+
   const name = String(body.customerName || "").trim();
   const phone = String(body.customerPhone || "").trim();
   const address = String(body.deliveryAddress || "").trim();
   const city = String(body.deliveryCity || "").trim();
   const state = String(body.deliveryState || "").trim();
-  const notes = String(body.deliveryNotes || "").trim().slice(0, 1000);
+  const notes = String(body.deliveryNotes || "").trim();
   const deliveryMethod = body.deliveryMethod === "pickup" ? "pickup" : "delivery";
   const requested = Array.isArray(body.items) ? body.items : [];
 
@@ -26,9 +54,13 @@ module.exports = async function handler(req, res) {
   }
   const quantities = new Map();
   for (const item of requested) {
+    if (!item || typeof item !== "object" || Array.isArray(item)) {
+      return res.status(400).json({ error: "One or more order items are invalid." });
+    }
     const id = String(item.id || "");
     const quantity = Number(item.quantity);
-    if (!/^[0-9a-f-]{36}$/i.test(id) || !Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(id) ||
+        !Number.isInteger(quantity) || quantity < 1 || quantity > 20) {
       return res.status(400).json({ error: "One or more order items are invalid." });
     }
     quantities.set(id, (quantities.get(id) || 0) + quantity);
@@ -118,4 +150,8 @@ module.exports = async function handler(req, res) {
   } finally {
     client.release();
   }
+};
+
+module.exports.config = {
+  api: { bodyParser: { sizeLimit: "16kb" } }
 };
